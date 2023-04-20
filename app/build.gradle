@@ -60,7 +60,6 @@ android {
             dimension 'devProd'
             minSdkVersion 21
             resConfigs "en", "xxhdpi,xhdpi"
-            ndk.abiFilters 'armeabi-v7a', 'arm64-v8a','x86'
         }
     }
 
@@ -109,6 +108,8 @@ dependencies {
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation "androidx.constraintlayout:constraintlayout:2.1.4"
     implementation "androidx.room:room-runtime:2.4.3"
+    implementation 'androidx.test.ext:junit:1.1.5'
+    testImplementation 'junit:junit:4.12'
     annotationProcessor "androidx.room:room-compiler:2.4.3"
 
     // material design
