@@ -1,5 +1,8 @@
 package com.backyardbrains.dsp.usb;
 
+import static com.backyardbrains.utils.LogUtils.LOGD;
+import static com.backyardbrains.utils.LogUtils.makeLogTag;
+
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbDeviceConnection;
 import android.os.AsyncTask;
@@ -18,9 +21,6 @@ import com.backyardbrains.utils.SampleStreamUtils;
 import com.backyardbrains.utils.SpikerBoxHardwareType;
 
 import java.util.Set;
-
-import static com.backyardbrains.utils.LogUtils.LOGD;
-import static com.backyardbrains.utils.LogUtils.makeLogTag;
 
 /**
  * Wrapper for {@link UsbDevice} class. Device can only be one of supported BYB usb devices.
@@ -106,8 +106,7 @@ public abstract class AbstractUsbSignalSource extends AbstractSignalSource imple
     private boolean disconnecting;
 
     AbstractUsbSignalSource(@NonNull UsbDevice device) {
-        super(SampleStreamUtils.DEFAULT_SAMPLE_RATE, AudioUtils.DEFAULT_CHANNEL_COUNT,
-                AudioUtils.getBitsPerSample(AudioUtils.DEFAULT_BITS_PER_SAMPLE));
+        super(SampleStreamUtils.DEFAULT_SAMPLE_RATE, AudioUtils.DEFAULT_CHANNEL_COUNT, AudioUtils.getBitsPerSample(AudioUtils.DEFAULT_BITS_PER_SAMPLE));
 
         this.device = device;
 
@@ -153,12 +152,16 @@ public abstract class AbstractUsbSignalSource extends AbstractSignalSource imple
         if (vid == BYB_VENDOR_ID) {
             if (pid == BYB_HUMAN_SB_PRO_ID1) {
                 return SpikerBoxHardwareType.HUMAN_PRO;
-            }if (pid == BYB_HHIBOX_SB) {
+            }
+            if (pid == BYB_HHIBOX_SB) {
                 return SpikerBoxHardwareType.HHIBOX;
             } else if (pid == BYB_PID_MUSCLE_SB_PRO) {
                 return SpikerBoxHardwareType.MUSCLE_PRO;
             } else if (pid == BYB_PID_NEURON_SB_PRO) return SpikerBoxHardwareType.NEURON_PRO;
-
+        } else if (vid == BYB_HHIBOX_VENDOR_ID) {
+            if (pid == BYB_HHIBOX_SB) {
+                return SpikerBoxHardwareType.HHIBOX;
+            }
         }
 
         return SpikerBoxHardwareType.UNKNOWN;
@@ -168,6 +171,8 @@ public abstract class AbstractUsbSignalSource extends AbstractSignalSource imple
      * Starts reading data from the usb endpoint.
      */
     protected abstract void startReadingStream();
+
+    protected abstract void startReadingStreamFromHHIB();
 
     /**
      * Stops reading data from usb endpoint.
@@ -181,6 +186,12 @@ public abstract class AbstractUsbSignalSource extends AbstractSignalSource imple
     public final void start() {
         LOGD(TAG, "start()");
         startReadingStream();
+    }
+
+    @Override
+    public void startHHIB() {
+        LOGD(TAG, "startHHIB()");
+        startReadingStreamFromHHIB();
     }
 
     /**
@@ -203,8 +214,7 @@ public abstract class AbstractUsbSignalSource extends AbstractSignalSource imple
      *
      * @param listener the listener to be added to the current set of listeners.
      */
-    public void addOnSpikerBoxHardwareTypeDetectionListener(
-            @NonNull OnSpikerBoxHardwareTypeDetectionListener listener) {
+    public void addOnSpikerBoxHardwareTypeDetectionListener(@NonNull OnSpikerBoxHardwareTypeDetectionListener listener) {
         if (onSpikerBoxHardwareTypeDetectionListeners == null) {
             onSpikerBoxHardwareTypeDetectionListeners = new ArraySet<>();
         }
@@ -218,8 +228,7 @@ public abstract class AbstractUsbSignalSource extends AbstractSignalSource imple
      *
      * @param listener the listener to be removed from the current set of listeners.
      */
-    public void removeOnSpikerBoxHardwareTypeDetectionListener(
-            @NonNull OnSpikerBoxHardwareTypeDetectionListener listener) {
+    public void removeOnSpikerBoxHardwareTypeDetectionListener(@NonNull OnSpikerBoxHardwareTypeDetectionListener listener) {
         if (onSpikerBoxHardwareTypeDetectionListeners == null) return;
         onSpikerBoxHardwareTypeDetectionListeners.remove(listener);
         if (onSpikerBoxHardwareTypeDetectionListeners.size() == 0)
